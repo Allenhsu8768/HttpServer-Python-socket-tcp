@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<!-- saved from url=(0036)https://www.sublimehq.com/store/text -->
+<html class="hq"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Buy - Sublime Text</title>
+    <link rel="stylesheet" type="text/css" href="./Buy - Sublime Text_files/sublime_v3.css">
+    <link rel="stylesheet" type="text/css" href="./Buy - Sublime Text_files/store.css">
+    
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, user-scalable=yes">
+    
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        window.toggleResellerInfo = function() {
+            document.querySelectorAll('.reseller-info').forEach(function(e) {
+                if (e.style.display === 'none') {
+                    e.style.display = 'block';
+                } else {
+                    e.style.display = 'none';
+                }
+            });
+        };
+    });
+</script>
+    <script type="text/javascript">
+    var pricePerSeat = [{"up_to": 10, "amount": 65}, {"up_to": 25, "amount": 60}, {"up_to": 50, "amount": 55}, {"amount": 50}];
+
+    var seatsElement, totalElement;
+	function update_total() {
+        if (!seatsElement.value) return;
+
+		var seats = parseInt(seatsElement.value);
+
+		if (seats <= 0) return;
+
+		if (Array.isArray(pricePerSeat)) {
+			var price = 0;
+			var allocated = 0;
+
+			for (j in pricePerSeat) {
+				var pricing = pricePerSeat[j];
+				if ('up_to' in pricing) {
+					if (allocated + seats <= pricing.up_to) {
+						price += seats * pricing.amount;
+						break;
+					} else {
+						var s = (pricing.up_to - allocated);
+						price += s * pricing.amount;
+
+						seats -= s;
+						allocated = pricing.up_to;
+					}
+				} else {
+					price += seats * pricing.amount;
+					break;
+				}
+			}
+
+		} else {
+			var price = seats * pricePerSeat;
+		}
+
+		totalElement.textContent = price
+	}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        seatsElement = document.getElementById('seats');
+        totalElement = document.getElementById('total');
+        update_total();
+
+        // Hack to get the input on business_name duplicated to invoice_name
+        var invoiceNameElement = document.getElementById('invoice_name');
+        var businessNameElement = document.getElementById('business_name');
+        var previousValue = businessNameElement.value;
+        businessNameElement.oninput = function(event) {
+            var currentValue = invoiceNameElement.value;
+            if (currentValue == '' || currentValue == previousValue) {
+                invoiceNameElement.value = this.value;
+            }
+
+            previousValue = businessNameElement.value;
+        };
+    });
+</script>
+
+    <script src="./Buy - Sublime Text_files/checkout.js.下載"></script>
+    
+    <script type="text/javascript">
+        function by_id(id) {
+            return document.getElementById(id);
+        }
+
+        function set_text(id, text) {
+            var el = by_id(id);
+            if (!el)
+                return;
+            el.innerHTML = text;
+        }
+
+        var singleUserLicensePrice = parseInt("80");
+
+        if (window.StripeCheckout) {
+            var handler = StripeCheckout.configure({
+                name: 'Sublime Text',
+                key: 'pk_live_erYeH3NSdbgv6xh5eh3YmGm4',
+                image: 'https://www.sublimehq.com/images/sublime_text_stripe.svg',
+                locale: 'auto',
+                token: function(token) {
+                    var sulBuyForm = by_id('sul-buy-form');
+                    sulBuyForm.elements['stripe-token'].value = token.id;
+
+                    var buyForm = by_id('buyform');
+                    sulBuyForm.elements['email'].value = buyForm.elements['email'].value;
+                    sulBuyForm.elements['name'].value = buyForm.elements['name'].value;
+
+                    sulBuyForm.submit();
+                },
+            });
+
+            function sulStripeSubmit(event) {
+                
+
+                var form = by_id('buyform');
+
+                // Show form error if validation fails.
+                if (!form.checkValidity()) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                var email = by_id('email').value;
+
+                handler.open({
+                    name: 'Sublime Text',
+                    email: email,
+                    description: 'Personal License',
+                    zipCode: true,
+                    billingAddress: true,
+                    amount: singleUserLicensePrice * 100,
+                });
+            }
+        }
+
+        function sulPayPalSubmit(event) {
+            
+
+            var form = by_id('buyform');
+
+            // Show form error if validation fails.
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            event.preventDefault();
+
+            var form = by_id('buyform');
+            var sulBuyForm = by_id('sul-buy-form');
+            sulBuyForm.action = '/store/buy_license_paypal';
+
+            sulBuyForm.elements['email'].value = form.elements['email'].value;
+            sulBuyForm.elements['name'].value = form.elements['name'].value;
+
+            sulBuyForm.submit();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var formTable = by_id('buy-form-table');
+            var personalForm = by_id('personal-form').childNodes;
+            var businessForm = by_id('business-form').childNodes;
+
+            var personalNote = by_id('personal-note');
+
+            var loaded = [];
+
+            function load(elements) {
+                loaded.forEach(function(e) {
+                    formTable.removeChild(e);
+                });
+                loaded = [];
+
+                // IE doesn't support forEach on element lists.
+                for (var i = 0; i < elements.length; ++i) {
+                    var node = elements[i].cloneNode(true);
+                    formTable.appendChild(node);
+                    loaded.push(node);
+                }
+            }
+            window.showPersonal = function() {
+                personalNote.style.display = '';
+                set_text('form-heading', 'License Info');
+                load(personalForm);
+            };
+            window.showBusiness = function() {
+                personalNote.style.display = 'none';
+                set_text('form-heading', 'Login Info');
+                load(businessForm);
+            };
+
+            if (by_id('personal').checked) {
+                showPersonal();
+            } else {
+                showBusiness();
+            }
+        });
+    </script>
+
+</head>
+<body>	
+    
+<header>
+    <section>
+        <a id="logo" href="https://www.sublimetext.com/">
+            <img src="./Buy - Sublime Text_files/logo.svg" alt="Sublime Text">
+        </a>
+        <nav>
+            <a href="https://www.sublimetext.com/3">Download</a>
+            <a href="https://www.sublimehq.com/store/text">Buy</a>
+            <a href="https://www.sublimetext.com/support">Support</a>
+            <span class="vr"></span>
+            <a href="https://sublimetext.com/blog/">News</a>
+            <a href="https://forum.sublimetext.com/">Forum</a>
+        </nav>
+    </section>
+</header>
+
+
+    <main>
+        <section>
+            
+            <nav>
+
+    <a href="https://www.sublimehq.com/store/login">Account</a>
+
+</nav>
+            
+            <h1><span>
+Buy Sublime Text
+</span></h1>
+
+            <noscript><div class="message error">Please enable JavaScript</div></noscript>
+            <!--[if lt IE 11]>
+                <div class="message error">Your browser is no longer supported. Please update to a modern browser for this website to work.</div>
+                <noscript>
+            <![endif]-->
+            
+                
+                    
+                
+            
+            
+    <p>Sublime Text may be downloaded and evaluated for free, however a license must be purchased for continued use.</p>
+
+
+    <form id="buyform" method="post" action="https://www.sublimehq.com/store/submit_email">
+        <input name="product" type="hidden" value="EA7E">
+
+        <section>
+            <h3 id="form-heading">License Info</h3>
+            <table>
+                <tbody id="buy-form-table">
+                <tr class="email">
+                    <td><label for="email">Email*</label></td>
+                    <td><input type="email" id="email" name="email" pattern="^.+@.+\..+$" autofocus="" required=""></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <label for="personal">
+                            <input type="radio" name="type" id="personal" value="personal" checked="" onclick="showPersonal()">
+                            This license is for me
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <div id="personal-note" class="info_msg">
+                            <p>Personal license keys are only available for individuals, if you are purchasing for a business or organization, please click below.
+
+                            </p><p>Personal licenses are a once off purchase, and come with 3 years of updates. After 3 years, an upgrade will be required to receive further updates. One license key is all you need for all your computers and operating systems</p>
+
+                            <p><a href="https://www.sublimehq.com/store/text">More…</a></p>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <label for="business">
+                            <input type="radio" name="type" id="business" value="business" onclick="showBusiness()">
+                            This license is for the business
+                        </label>
+                    </td>
+                </tr>
+                
+            <tr class="name">
+                <td><label>Name*</label></td>
+                <td>
+                    <input type="text" name="name" required="">
+                    <br>
+                    <span class="info_msg">This name will appear on the license key.</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <form id="sul-buy-form" method="post" action="https://www.sublimehq.com/store/buy_license">
+                        <input name="stripe-token" type="hidden">
+                        <input name="product" type="hidden" value="EA7E">
+                        <input name="email" type="hidden">
+                        <input name="name" type="hidden">
+
+                        
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <h3 class="total">
+                        Total:
+                        <span class="price">$80 USD</span>
+                    </h3>
+                    <div class="buttons">
+                        <button type="submit" class="card" onclick="sulStripeSubmit(event)">Pay with Card</button>
+                        <button type="submit" class="paypal" onclick="sulPayPalSubmit(event)">Pay with PayPal</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+            </table>
+        </section>
+    </form>
+
+
+    <section class="notes">
+    <p>Questions? See the <a href="https://www.sublimehq.com/sales_faq">Frequently Asked Questions</a></p>
+
+    <p>
+        License Keys are issued by Sublime HQ Pty Ltd, ABN 48 153 193 661, and covered by the <a href="https://www.sublimehq.com/eula">End User License Agreement</a>.
+        <br>
+        Sublime HQ Pty Ltd is located in Sydney, Australia.
+    </p>
+</section>
+
+    <table style="display: none">
+        <tbody id="personal-form">
+            <tr class="name">
+                <td><label>Name*</label></td>
+                <td>
+                    <input type="text" name="name" required="">
+                    <br>
+                    <span class="info_msg">This name will appear on the license key.</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <form id="sul-buy-form" method="post" action="https://www.sublimehq.com/store/buy_license">
+                        <input name="stripe-token" type="hidden">
+                        <input name="product" type="hidden" value="EA7E">
+                        <input name="email" type="hidden">
+                        <input name="name" type="hidden">
+
+                        
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <h3 class="total">
+                        Total:
+                        <span class="price">$80 USD</span>
+                    </h3>
+                    <div class="buttons">
+                        <button type="submit" class="card" onclick="sulStripeSubmit(event)">Pay with Card</button>
+                        <button type="submit" class="paypal" onclick="sulPayPalSubmit(event)">Pay with PayPal</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table style="display: none">
+        
+
+        <tbody id="business-form">
+            <tr>
+                <td></td>
+                <td>
+                    <div class="info_msg">
+    
+        <p>
+            Business licenses are sold on an annual tiered subscription basis, at
+            
+
+            $65/seat/year for the first 10 seats,
+                
+                $60/seat/year for seats 11-25,
+            
+                
+                $55/seat/year for seats 26-50,
+            
+            and $50/seat/year for any further seats.
+        </p>
+    
+
+    <a href="https://www.sublimehq.com/store/text#" onclick="toggleResellerInfo(); return false;">Information for Software Resellers</a>
+
+    <div class="reseller-info" style="display: none;">
+        <p>If you are a software reseller, it's recommended to have a single account, and then create one subscription per-customer.</p>
+
+        <p>Each subscription has its own business name and billing cycle.</p>
+    </div>
+</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="submit" value="Continue"></td>
+            </tr>
+            <tr class="password">
+    <td><label>Password*</label></td>
+    <td>
+        
+        <input type="password" name="password" minlength="8" autocomplete="new-password" disabled="">
+        
+    </td>
+</tr>
+<tr>
+    <td><label>Confirm Password*</label></td>
+    <td>
+        
+        <input type="password" name="confirm" minlength="8" disabled="">
+        
+    </td>
+</tr>
+<tr>
+    <td colspan="2"><button type="button" disabled="">Register</button></td>
+</tr>
+            <tr>
+                <td colspan="2">
+                    <h3 class="business">Business Details</h3>
+                </td>
+            </tr>
+            <tr>
+    <td><label>Business Name*</label></td>
+    <td><input id="business_name" type="text" name="business_name" value="" minlength="1" disabled=""></td>
+</tr>
+<tr>
+    <td><label>Seats*</label></td>
+    <td><input type="number" name="seats" id="seats" value="1" min="1" oninput="update_total()" disabled=""></td>
+</tr>
+<tr>
+    <td><label>Total</label></td>
+    <td class="disabled"><b class="total">$<span id="total">65</span> USD per year</b></td>
+</tr>
+
+<tr>
+    <td><label></label></td>
+    <td></td>
+</tr>
+
+
+
+<tr>
+    <td><label>Invoice To*</label></td>
+    <td><input id="invoice_name" type="text" name="invoice_name" value="" disabled=""></td>
+</tr>
+<tr>
+    <td><label>Invoice VAT ID</label></td>
+    <td><input type="text" name="invoice_vat_id" value="" disabled=""></td>
+</tr>
+<tr>
+    <td valign="top"><label>Invoice Address</label></td>
+    <td><textarea name="invoice_address" cols="30" rows="6" disabled=""></textarea></td>
+</tr>
+
+<tr>
+    <td colspan="2">
+        <div class="buttons">
+            
+            <button type="button" onclick="purchase(event, window.product)" disabled="" class="card">Pay with Card</button>
+        </div>
+    </td>
+</tr>
+        </tbody>
+    </table>
+
+        </section>
+    </main>
+    <footer>
+        <section>
+            © Sublime HQ Pty Ltd
+
+            <p>Woollahra, Sydney.
+        </p></section>
+    </footer>
+
+<iframe frameborder="0" allowtransparency="true" src="./Buy - Sublime Text_files/index-933c5ec6e698f8e8c478639778699b64.html" name="stripe_checkout_app" class="stripe_checkout_app" style="z-index: 2147483647; display: none; background: rgba(0, 0, 0, 0.004); border: 0px none transparent; overflow: hidden auto; visibility: visible; margin: 0px; padding: 0px; -webkit-tap-highlight-color: transparent; position: fixed; left: 0px; top: 0px; width: 100%; height: 100%;"></iframe></body></html>
